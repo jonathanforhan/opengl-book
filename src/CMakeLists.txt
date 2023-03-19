@@ -1,8 +1,9 @@
 add_executable(${PROJECT_NAME} main.cpp ${GLAD_SOURCE})
 
 add_library(SRC_LIB STATIC
-    shader.cpp
-    )
+        shader.cpp
+        cube.cpp
+        )
 
 target_include_directories(SRC_LIB PUBLIC ${CMAKE_SOURCE_DIR}/src)
 

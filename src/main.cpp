@@ -9,7 +9,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include"shader.hpp"
+#include "cube.hpp"
+#include "shader.hpp"
 
 uint32_t getMillis() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -36,45 +37,9 @@ int main() {
     }
 
     Shader shader;
-
     shader.addShader("../../shaders/test.vert", GL_VERTEX_SHADER)
           ->addShader("../../shaders/test.frag", GL_FRAGMENT_SHADER);
     shader.createProgram();
-
-    GLfloat position[] = {
-        // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
-    };
-
-    GLuint indices[] = {
-        0, 1, 3,
-        1, 2, 3
-    };
-
-    GLuint VAO, VBO, EBO;
-    glCreateVertexArrays(1, &VAO);
-    glCreateBuffers(1, &VBO);
-    glCreateBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferStorage(GL_ARRAY_BUFFER, sizeof(position), position, 0);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, 0);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
     GLuint tex1, tex2;
     glCreateTextures(GL_TEXTURE_2D, 1, &tex1);
@@ -110,6 +75,11 @@ int main() {
         std::cout << "ERROR::STBI_LOAD_FAILURE\n";
     }
     stbi_image_free(data);
+    shader.use();
+    shader.setInt("tex1", 0);
+    shader.setInt("tex2", 1);
+
+    Cube cube(shader);
 
     uint32_t start = getMillis();
 
@@ -138,8 +108,6 @@ int main() {
         transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
         shader.use();
-        shader.setInt("tex1", 0);
-        shader.setInt("tex2", 1);
 
         GLuint transformLoc = glGetUniformLocation(shader.ID, "transform");
         glUniformMatrix4fv((int)transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
